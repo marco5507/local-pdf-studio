@@ -1,0 +1,17 @@
+import {useRef,useState} from 'react';
+import {Modal} from './ui';
+import {decodeBackup,encodeBackup,type Backup} from './backup';
+import {snapshotDrafts,restoreDrafts} from './storage';
+import type {Preferences} from './types';
+import type {Translate} from './i18n';
+export function BackupDialog({t,preferences,beforeExport,onPreferences,onRestored,onClose}:{t:Translate;preferences:Preferences;beforeExport:()=>Promise<void>;onPreferences:(p:Preferences)=>Promise<void>;onRestored:()=>void;onClose:()=>void}){
+ const [busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[backup,setBackup]=useState<Backup|null>(null),[settings,setSettings]=useState(false),[signatures,setSignatures]=useState(false);const input=useRef<HTMLInputElement>(null);
+ async function run(fn:()=>Promise<void>){setBusy(true);setError('');setMessage('');try{await fn();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}}
+ return <Modal t={t} title={t('Backup and restore')} onClose={()=>{if(!busy)onClose();}}><div className="dialog-body backup-body" aria-busy={busy}>
+ <p>{t('Back up saved drafts, bookmarks, preferences and saved tools to a local file.')}</p>
+ <button disabled={busy} onClick={()=>run(async()=>{await beforeExport();const blob=await encodeBackup(await snapshotDrafts(),preferences),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Local-PDF-Studio-'+new Date().toISOString().slice(0,10)+'.lpsbackup';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);setMessage(t('Backup downloaded'));})}>{t('Download backup')}</button>
+ <hr/><input ref={input} type="file" accept=".lpsbackup" aria-label={t('Backup file')} disabled={busy} onChange={e=>{const f=e.target.files?.[0];e.target.value='';setBackup(null);setSettings(false);setSignatures(false);if(f)run(async()=>setBackup(await decodeBackup(f)));}}/>
+ {backup&&<><h3>{t('Restore preview')}</h3><p>{backup.drafts.length} {t('Recent drafts')} · {(backup.drafts.reduce((s,d)=>s+d.source.byteLength+d.current.byteLength,0)/1048576).toFixed(1)} MB</p><ul className="backup-preview">{backup.drafts.map((d,i)=><li key={i}>{d.name} · {(d.bookmarks||[]).length} {t('Bookmarks')}</li>)}</ul><p>{t('Restored drafts are added as separate copies. Existing drafts stay unchanged.')}</p><label><input type="checkbox" checked={settings} disabled={busy} onChange={e=>setSettings(e.target.checked)}/>{t('Restore appearance and pen preferences')}</label><label><input type="checkbox" checked={signatures} disabled={busy} onChange={e=>setSignatures(e.target.checked)}/>{t('Add saved signatures')} ({backup.preferences.signatures.length})</label><button className="primary" disabled={busy} onClick={()=>run(async()=>{await restoreDrafts(backup.drafts);const p=backup.preferences;setBackup(null);onRestored();setMessage(t('Drafts restored'));if(settings||signatures)await onPreferences({...preferences,...(settings?{language:p.language,theme:p.theme,eraserSize:p.eraserSize,presets:p.presets}:{}),signatures:signatures?[...preferences.signatures,...p.signatures.filter(s=>!preferences.signatures.some(old=>old.data===s.data))]:preferences.signatures});})}>{t('Restore copies')}</button></>}
+ {busy&&<p role="status">{t('Working…')}</p>}{message&&<p role="status">{message}</p>}{error&&<p role="alert" className="danger">{t(error)}</p>}
+ </div><div className="dialog-actions"><button disabled={busy} onClick={onClose}>{t('Done')}</button></div></Modal>;
+}

@@ -1,0 +1,18 @@
+node_modules/
+dist/
+browser-data/
+test-artifacts/
+outputs/
+qa-*-built.html
+qa-built.html
+.env
+.env.*
+!.env.example
+*.log
+*.lpsbackup
+.DS_Store
+Thumbs.db
+# One-time development migration scripts, not part of the build.
+scripts/fixup.mjs
+scripts/final-refinements.mjs
+scripts/refine.mjs

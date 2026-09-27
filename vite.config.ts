@@ -1,0 +1,4 @@
+import {defineConfig} from 'vite';
+import fs from 'node:fs';
+export default defineConfig({define:{__APP_VERSION__:JSON.stringify(JSON.parse(fs.readFileSync('package.json','utf8')).version)},base:'./',optimizeDeps:{exclude:['mupdf']},plugins:[{name:'local-test-report',configureServer(server){server.middlewares.use('/__qa/result',(req,res)=>{if(req.method!=='POST'){res.statusCode=405;res.end();return;}let data='';req.on('data',chunk=>{data+=chunk;if(data.length>25_000_000)req.destroy();});req.on('end',()=>{try{JSON.parse(data);fs.mkdirSync('test-artifacts',{recursive:true});fs.writeFileSync('test-artifacts/browser-report.json',data);res.end('ok');}catch{res.statusCode=400;res.end();}});});}}],build:{target:'es2022',outDir:'dist',rollupOptions:{input:{viewer:'index.html'}}},worker:{format:'es'},server:{port:5173}});
+

@@ -1,0 +1,12 @@
+import {useEffect,useState} from 'react';
+import type {EngineClient} from './client';
+import type {Translate} from './i18n';
+import {allAnnotations,matchesAnnotation,studyHTML,type AnnotationFilter,type StudyNote} from './annotations';
+import {parseRanges} from './ranges';
+import {Modal,download} from './ui';
+export function StudyDialog({engine,count,name,filter,t,onClose}:{engine:EngineClient;count:number;name:string;filter:AnnotationFilter;t:Translate;onClose:()=>void}){
+ const [range,setRange]=useState(''),[filtered,setFiltered]=useState(false),[notes,setNotes]=useState<StudyNote[]|null>(null),[busy,setBusy]=useState(false),[progress,setProgress]=useState(''),[error,setError]=useState('');
+ useEffect(()=>{setNotes(null);},[range,filtered]);
+ async function preview(){setBusy(true);setError('');setNotes(null);try{const pages=parseRanges(range,count),all:StudyNote[]=[];for(let i=0;i<pages.length;i++){setProgress(`${i+1} / ${pages.length}`);const rows=await engine.call('study',{page:pages[i]});all.push(...rows.filter(n=>matchesAnnotation(n,filtered?filter:allAnnotations)));}setNotes(all);}catch(e){setError(String(e));}finally{setBusy(false);}}
+ return <Modal t={t} title={t('Export study notes')} onClose={()=>{if(!busy)onClose();}}><div className="dialog-body"><p>{t('Collect marked text and comments with page numbers into a printable HTML document.')}</p><label>{t('Page range')}<input value={range} placeholder="1, 3-5" disabled={busy} onChange={e=>setRange(e.target.value)}/><small>{t('All pages if empty')}</small></label><label><input type="checkbox" checked={filtered} disabled={busy} onChange={e=>setFiltered(e.target.checked)}/>{t('Use current annotation filters')}</label><button disabled={busy} onClick={preview}>{t('Preview')}</button>{busy&&<p role="status">{t('Working…')} {progress}</p>}{error&&<p className="danger" role="alert">{error}</p>}{notes&&<div className="study-preview"><p>{notes.length} {t('Study notes')}</p>{notes.map((n,i)=><article key={i}><strong>{t('Page')} {n.page+1} · {t(n.type==='Text'?'Note':n.type)}</strong><p>{n.text}</p><p>{n.contents||(!n.text?t('No extractable text in this annotation.'):'')}</p></article>)}</div>}</div><div className="dialog-actions"><button disabled={busy} onClick={onClose}>{t('Cancel')}</button><button className="primary" disabled={busy||!notes?.length} onClick={()=>download(new TextEncoder().encode(studyHTML(name,notes!,t)),name.replace(/\.pdf$/i,'')+' - study notes.html','text/html;charset=utf-8')}>{t('Download study notes')}</button></div></Modal>;
+}
