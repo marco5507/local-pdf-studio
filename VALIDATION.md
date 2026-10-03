@@ -129,3 +129,12 @@ All 36 Node tests passed. Four new file-save tests verify editable annotations a
 Save-to-original uses the local File System Access API and does not update Google Drive or website source documents. No additional extension permissions were added. Source: https://developer.chrome.com/docs/capabilities/web-apis/file-system-access
 
 The existing compiled browser regression suite also passed all 18 stages with no errors on 1.2.3, covering annotations, erasers, forms, page organization, editable/flattened export, draft recovery, bilingual UI and denied storage.
+
+
+## Browser tab filename and logo — 1.2.4
+
+The tab title follows the successfully opened document's filename, without shortening or an app-name suffix. Home resets it to Local PDF Studio. Code review confirmed that failed opens and cancelled restore/password dialogs do not replace the current document state used by the title. The existing bundled 16px and 48px app logos are declared as favicons; no permissions or external resources were added.
+
+TypeScript checking and the production build passed. Chrome checks against the production build on localhost passed for `Lecture 4 (2026) & notes.pdf` and `中文講義（第2課）- 備註.pdf`, including two independent PDF tab titles, returning Home, restoring a saved draft, and switching to another saved document. Synthetic PDFs were opened through the existing source-URL flow. Production icon paths resolve to the bundled PNG files.
+
+The browser automation extension's file-access setting prevented direct file-picker testing. File-picker failure/cancellation and real Google Drive opening were therefore reviewed in source, not retested live for this small change. Installed-extension activation and the unbadged browser-tab icon remain user-side checks after saving drafts, reloading the extension and refreshing PDF tabs.

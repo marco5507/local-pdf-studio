@@ -37,6 +37,8 @@ export default function App(){
  const [draftConflict,setDraftConflict]=useState(false);const conflictSession=useRef<string|null>(null);
  const fileInput=useRef<HTMLInputElement>(null),mergeInput=useRef<HTMLInputElement>(null),imageInput=useRef<HTMLInputElement>(null),watermarkInput=useRef<HTMLInputElement>(null),scroll=useRef<HTMLElement>(null);
  const session=useRef<{id:string;source:ArrayBuffer;name:string;encrypted:boolean;token:string|null}|null>(null),latest=useRef({engine,info,page,zoom,bookmarks,metaRevision}),savedRevision=useRef(-1),saving=useRef<Promise<void>|null>(null),mounted=useRef(true);latest.current={engine,info,page,zoom,bookmarks,metaRevision};
+ const tabTitle=info&&name?name:'Local PDF Studio';
+ useEffect(()=>{document.title=tabTitle;},[tabTitle]);
  const t=translator(prefs.language);const mark=info&&selected?info.pages[selected.page]?.marks.find(a=>a.id===selected.id):undefined;
  useEffect(()=>{mounted.current=true;getPreferences().then(p=>{setPrefs(p);setReady(true);});refreshDrafts();return()=>{mounted.current=false;};},[]);
  useEffect(()=>{document.documentElement.lang=prefs.language==='zh'?'zh-Hant':'en';const media=matchMedia('(prefers-color-scheme: dark)');const apply=()=>document.documentElement.dataset.theme=prefs.theme==='system'?(media.matches?'dark':'light'):prefs.theme;apply();media.addEventListener('change',apply);return()=>media.removeEventListener('change',apply);},[prefs.theme,prefs.language]);

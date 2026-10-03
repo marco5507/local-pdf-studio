@@ -106,7 +106,7 @@ The `/qa-improvements-built.html` local test runner checks all six additions, in
 - **Properties panel → Annotation filters:** Filter by annotation type and color. Filters affect document pages, thumbnails, annotation selection/erasing, and the comments list. Hidden annotations stay in the PDF. An active-filter banner offers **Show all annotations**, including when side panels are hidden. PDF exports and print include every annotation.
 - **Properties panel → Export study notes:** Select a page range, optionally use the current annotation filters, preview the marked text and comments, and download a printable HTML document. Page numbers refer to the current PDF order. English and Chinese text are retained where usable text exists. Markups on scanned pages are listed without extracted text; OCR is not included. The HTML opens locally in a browser and can be printed or saved as PDF using the browser print dialog.
 
-To activate an update, wait for **Saved locally** in open PDF tabs, click **Reload** on Local PDF Studio in Chrome's extensions page, and refresh PDF Studio and Drive tabs. The version badge should show **1.2.3**.
+To activate an update, wait for **Saved locally** in open PDF tabs, click **Reload** on Local PDF Studio in Chrome's extensions page, and refresh PDF Studio and Drive tabs. The version badge should show **1.2.4**.
 
 
 ## Text-box fixes — 1.2.1
@@ -130,3 +130,8 @@ Zoom in/out, the percentage menu, and Fit width keep the reading position on the
 Open the arrow beside **Save a copy → Save to original file…**, select the original PDF on your computer, and confirm replacement in the file dialog. This exports an editable PDF with annotations and form fields intact, without flattening. Choose the destination each time; automatic draft saving continues to use local browser storage. Ctrl+S continues to download an editable copy.
 
 The extension cannot replace Google Drive or website originals with this option. It writes only to the local file you choose. Read-only PDFs do not allow replacement. Cancelling the picker leaves the document open. Export completes before the selected file is opened for writing; failures are reported and the draft remains available.
+
+
+## Browser tab filename and logo — 1.2.4
+
+Each PDF tab shows the open document’s filename beside the app logo. Names remain intact, including Chinese characters and punctuation; the browser may shorten long titles visually. Returning Home shows Local PDF Studio. Opening another file or restoring a draft updates the title after the document opens successfully.
